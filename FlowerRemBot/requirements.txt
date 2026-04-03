@@ -1,0 +1,8 @@
+python-telegram-bot==20.8
+pytz
+python-dateutil
+dateparser
+Flask
+waitress # Для локального запуска
+# gunicorn # Для продакшн-деплоя
+
