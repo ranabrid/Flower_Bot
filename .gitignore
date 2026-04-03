@@ -1,0 +1,10 @@
+# Ignore .env file
+.env
+
+# Ignore .env file for development
+.env.dev
+
+# Ignore database file
+bot_data.db
+__pycache__/
+*.pyc
