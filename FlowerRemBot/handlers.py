@@ -60,6 +60,7 @@ from constants import (
     MSG_HOUR_REMINDER,
     MSG_OLD_DATE,
     MSG_ASK_INTERVAL,
+    MSG_INTERVAL_INPUT,
 )
 
 import dateparser
@@ -115,7 +116,7 @@ async def choose_interval(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = query.data  # int_7, int_14...
 
     if data == "int_custom":
-        await query.edit_message_text(MSG_ASK_INTERVAL)
+        await query.edit_message_text(MSG_INTERVAL_INPUT)
         return constants.CUSTOM_INTERVAL
 
     days = int(data.split("_")[1])
