@@ -242,7 +242,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(MSG_POSTPONED_MESSAGE)
         return ConversationHandler.END
 
-     elif query.data == CALLBACK_BOUGHT:
+    elif query.data == CALLBACK_BOUGHT:
         # Пользователь купил цветы. Планируем следующее напоминание через 21 день.
 
         interval = get_interval(chat_id)
