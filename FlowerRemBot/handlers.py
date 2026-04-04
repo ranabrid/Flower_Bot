@@ -123,6 +123,29 @@ async def choose_interval(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     save_interval(chat_id, days)
 
+    # если пользователь пришёл после "Купил" → планируем
+    if context.user_data.get("after_bought"):
+        next_remind_date = datetime.now(moscow_tz) + timedelta(days=days)
+
+        save_user_date(chat_id, next_remind_date.isoformat())
+
+        job_queue = context.application.job_queue
+        job_name = f"cycle_{chat_id}"
+
+    # удаляем старые задачи
+    for job in job_queue.get_jobs_by_name(job_name):
+        job.schedule_removal()
+
+    # создаём новую
+    job_queue.run_once(
+        send_cycle_reminder,
+        when=next_remind_date,
+        chat_id=chat_id,
+        name=job_name,
+    )
+
+    context.user_data["after_bought"] = False
+
     await query.edit_message_text(f"Ок, буду напоминать раз в {format_days(days)} 👌")
 
     return ConversationHandler.END
@@ -142,6 +165,26 @@ async def handle_custom_interval(update: Update, context: ContextTypes.DEFAULT_T
             await update.message.reply_text("Давай что-то поменьше 🙂 (до 365 дней)")
             return constants.CUSTOM_INTERVAL
         save_interval(chat_id, days)
+        
+        if context.user_data.get("after_bought"):
+            next_remind_date = datetime.now(moscow_tz) + timedelta(days=days)
+
+            save_user_date(chat_id, next_remind_date.isoformat())
+
+            job_queue = context.application.job_queue
+            job_name = f"cycle_{chat_id}"
+
+            for job in job_queue.get_jobs_by_name(job_name):
+                job.schedule_removal()
+
+            job_queue.run_once(
+                send_cycle_reminder,
+                when=next_remind_date,
+                chat_id=chat_id,
+                name=job_name,
+            )
+
+            context.user_data["after_bought"] = False
 
         await update.message.reply_text(
             f"Ок, буду напоминать раз в {format_days(days)} 👌"
@@ -243,7 +286,8 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return ConversationHandler.END
 
     elif query.data == CALLBACK_BOUGHT:
-        # Пользователь купил цветы. Планируем следующее напоминание через 21 день.
+        
+        context.user_data["after_bought"] = True
 
         interval = get_interval(chat_id)
 
